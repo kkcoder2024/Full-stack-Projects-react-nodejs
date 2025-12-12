@@ -6,8 +6,8 @@ const todoSchema = new mongoose.Schema(
       required: true,
     },
 
-    active: {
-      default: 1,
+    completed: {
+      default: false,
     },
   },
   {
