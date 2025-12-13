@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import LoadingScreen from "../components/LoadingScreen";
 export default function Todo() {
   const [todos, setTodos] = useState([
     { id: 1, text: "Learn React basics", completed: false },
@@ -8,7 +10,19 @@ export default function Todo() {
   ]);
   const navigate = useNavigate();
   const [newTodo, setNewTodo] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-8 px-4">
       <button

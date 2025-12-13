@@ -12,7 +12,6 @@ function AuthContent() {
         const response = await axios.get(`${backend}/api/users/auth-user`, {
           withCredentials: true,
         });
-
         if (!response) {
           setLoggedIn(response.data.loggedIn);
         }
