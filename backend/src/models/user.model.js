@@ -45,12 +45,13 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String, //hashed
-      required: [true, "Password is required"],
     },
 
     refreshToken: {
       type: String,
     },
+
+    googleAuth: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

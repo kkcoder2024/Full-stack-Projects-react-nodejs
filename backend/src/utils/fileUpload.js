@@ -11,20 +11,31 @@ const uploadOnCloudinary = async (localFilePath) => {
     if (!localFilePath) throw new Error("No file path provided for upload");
     const response = await cloudinary.uploader.upload(localFilePath);
     console.log("File Uploaded Succesfully", response);
-    fs.unlinkSync(localFilePath);
+    try {
+      if (localFilePath && existsSync(localFilePath)) {
+        unlinkSync(localFilePath);
+      } else {
+        console.warn("Local file not found for removal:", localFilePath);
+      }
+    } catch (e) {
+      console.error("Failed to remove local file after upload:", e);
+    }
     return response;
   } catch (error) {
-    new ApiErrorHandle(500, "Cloudinary Upload Error:", error.message);
-    fs.unlinkSync(localFilePath); // this will remove the failed to uploaded file from
-    // server that are temporaly store in local
-    return null;
+    // remove local file if exists
+    try {
+      if (localFilePath && existsSync(localFilePath)) unlinkSync(localFilePath);
+    } catch (e) {
+      console.error("Failed to remove local file:", e);
+    }
+    throw new ApiErrorHandle(500, "Cloudinary Upload Error: " + error.message);
   }
 };
 
 const updateImageOnCloudinary = async (OldImageUrl, newImageURL) => {
   try {
     if (!newImageURL || !OldImageUrl) {
-      new ApiErrorHandle(500, "Image path not found.");
+      throw new ApiErrorHandle(400, "Image path not found.");
     }
 
     const publicId = OldImageUrl.split("/").pop().split(".")[0];
@@ -40,7 +51,7 @@ const updateImageOnCloudinary = async (OldImageUrl, newImageURL) => {
 
     return uploadImage.url;
   } catch (error) {
-    new ApiErrorHandle(500, "Cloudinary Upload Error:", error.message);
+    throw new ApiErrorHandle(500, "Cloudinary Upload Error: " + error.message);
   }
 };
 export { uploadOnCloudinary, updateImageOnCloudinary };

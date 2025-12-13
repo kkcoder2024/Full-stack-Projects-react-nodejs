@@ -1,6 +1,5 @@
 import { Navigate } from "react-router-dom";
-
+import { isLoggedIn } from "../utils/auth.jsx";
 export default function PrivateRoute({ children }) {
-  const isLoggedIn = document.cookie.includes("token=");
   return isLoggedIn ? children : <Navigate to={"/login"} />;
 }

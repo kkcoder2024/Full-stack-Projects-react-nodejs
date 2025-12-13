@@ -5,7 +5,7 @@ import {
   updateImageOnCloudinary,
   uploadOnCloudinary,
 } from "../utils/fileUpload.js";
-import { ApiRespnse } from "../utils/ApiRespnse.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
@@ -50,10 +50,10 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiErrorHandle(400, "User already existed");
   }
   console.table(req.body);
-  console.log(JSON.stringify(req.files.avatar[0]));
+  console.log(JSON.stringify(req.files?.avatar?.[0] || "no avatar provided"));
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
   if (!avatarLocalPath) {
     throw new ApiErrorHandle(400, "Avatar file is required.");
   }
@@ -82,7 +82,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiRespnse(200, createdUser, "User Register Successfully."));
+    .json(new ApiResponse(200, createdUser, "User Register Successfully."));
 });
 
 // first check the input
@@ -126,7 +126,7 @@ const loginUser = asyncHandler(async (req, res) => {
     .cookie("accessToken", genAccessToken, options)
     .cookie("refreshToken", genRefreshToken, options)
     .json(
-      new ApiRespnse(
+      new ApiResponse(
         200,
         {
           userDataFromDatabase: loggedInUser,
@@ -138,7 +138,19 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-// logout suer
+const isUserLoggedIn = asyncHandler(async (req, res) => {
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        loggedIn: true,
+        user: req.user,
+      },
+      "User loggedin Successfully"
+    )
+  );
+});
+// logout suer}
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
@@ -156,17 +168,19 @@ const logoutUser = asyncHandler(async (req, res) => {
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiRespnse(200, {}, "User logged out successfully"));
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookie.refreshToken || req.body.refreshToken;
+  // note: express populates cookies on `req.cookies`
+  const incomingRefreshToken =
+    req.cookies?.refreshToken || req.body.refreshToken;
   if (!incomingRefreshToken) {
     throw new ApiErrorHandle(401, "Refresh Token not found");
   }
   try {
     const decodedToekn = jwt.verify(
-      //{decodedToekn} store a object that help in authentication
+      // {decodedToekn} store a object that help in authentication
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
@@ -180,7 +194,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiErrorHandle(400, "Invalid Refresh Token");
     }
 
-    const { genAccessToken, newgenRefreshToken } =
+    // generate new tokens (function returns { genAccessToken, genRefreshToken })
+    const { genAccessToken, genRefreshToken } =
       await generateAccessAndRefreshToken(userData._id);
     const options = {
       httpOnly: true,
@@ -188,14 +203,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     };
     return res
       .status(200)
-      .cookie("refreshToken", newgenRefreshToken, options)
+      .cookie("refreshToken", genRefreshToken, options)
       .cookie("accessToken", genAccessToken, options)
       .json(
-        new ApiRespnse(
+        new ApiResponse(
           200,
           {
             genAccessToken,
-            genRefreshToken: newgenRefreshToken,
+            genRefreshToken,
           },
           "Access Token refreshed."
         )
@@ -224,13 +239,13 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiRespnse(200, {}, "Password changed successfully."));
+    .json(new ApiResponse(200, {}, "Password changed successfully."));
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(new ApiRespnse(200, req.user, "Current User Fetched successfully.")); //req.user this comes from middelware
+    .json(new ApiResponse(200, req.user, "Current User Fetched successfully.")); //req.user this comes from middelware
 });
 
 const updateUserDetails = asyncHandler(async (req, res) => {
@@ -249,7 +264,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
   ).select("-password");
   return res
     .status(200)
-    .json(new ApiRespnse(200, user, "User details updated successfully."));
+    .json(new ApiResponse(200, user, "User details updated successfully."));
 });
 
 const updateAvater = asyncHandler(async (req, res) => {
@@ -282,7 +297,7 @@ const updateAvater = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiRespnse(200, user, "User avatar update successfully."));
+    .json(new ApiResponse(200, user, "User avatar update successfully."));
 });
 
 const updateCoverImage = asyncHandler(async (req, res) => {
@@ -313,7 +328,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiRespnse(200, user, "Cover Image updated successfully."));
+    .json(new ApiResponse(200, user, "Cover Image updated successfully."));
 });
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
@@ -379,7 +394,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiRespnse(200, "Channels fetched successfully."));
+    .json(new ApiResponse(200, "Channels fetched successfully."));
 });
 
 const getUserWatchHistory = asyncHandler(async (req, res) => {
@@ -402,7 +417,7 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
             $lookup: {
               from: "users",
               foreignField: "_id",
-              localStorage: "owner",
+              localField: "owner",
               as: "owner",
               pipeline: [
                 {
@@ -418,7 +433,7 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
           {
             $addFields: {
               owner: {
-                $first: "owner",
+                $first: "$owner",
               },
             },
           },
@@ -426,13 +441,13 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
       },
     },
   ]);
-  if (!user) {
+  if (!user || !user.length) {
     throw new ApiErrorHandle(400, "User not found!");
   }
   return res
     .status(200)
     .json(
-      new ApiRespnse(
+      new ApiResponse(
         200,
         user[0].watchHistory,
         "Watch History fetched successfully"
@@ -452,4 +467,5 @@ export {
   updateCoverImage,
   getUserChannelProfile,
   getUserWatchHistory,
+  isUserLoggedIn,
 };

@@ -11,11 +11,11 @@ import {
   getCurrentUser,
   getUserChannelProfile,
   getUserWatchHistory,
+  isUserLoggedIn,
 } from "../controllers/user.controller.js";
 const router = Router();
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
-import { updateImageOnCloudinary } from "../utils/fileUpload.js";
 
 router.route("/register").post(
   upload.fields([
@@ -35,6 +35,7 @@ router.route("/login").post(loginUser);
 
 // for logout user
 router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/auth-user").post(verifyJWT, isUserLoggedIn);
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/change-password").post(verifyJWT, changeCurrentPassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
