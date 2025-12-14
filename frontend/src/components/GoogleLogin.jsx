@@ -27,12 +27,11 @@ export default function GoogleLogin() {
       const backendLink = import.meta.env.VITE_BACKEND_PORT_LINK;
 
       const response = await axios.post(
-        `${backendLink}/auth/google-login`,
+        `${backendLink}/api/users/google-login`,
         { token },
         { withCredentials: true }
       );
 
-      // Show success alert
       AlertBox("success", response.data.message, response.status);
 
       navigate("/");

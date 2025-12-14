@@ -16,9 +16,9 @@ app.use(cookieParser());
 import { router } from "./routes/user.routes.js";
 import { googleRouter } from "./routes/google.routes.js";
 app.use("/api/users", router);
-app.use("/auth/google-login", googleRouter);
+app.use("/api/users/google-login", googleRouter);
 
-app.use((err, _, res, _) => {
+app.use((err, req, res, next) => {
   console.error(err);
 
   if (err && err.statusCode) {

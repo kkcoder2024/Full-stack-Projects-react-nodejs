@@ -3,7 +3,7 @@ import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiErrorHandle } from "../utils/ApiErrorHandle.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-
+import { cookieOptions } from "../utils/dev_env.js";
 const client_id = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
 });
@@ -11,13 +11,16 @@ const client_id = new OAuth2Client({
 const googleLogin = asyncHandler(async (req, res) => {
   try {
     const { token } = req.body;
-    
+
     if (!token) {
       throw new ApiErrorHandle(400, "Google token not provided");
     }
 
     if (!process.env.GOOGLE_CLIENT_ID) {
-      throw new ApiErrorHandle(500, "GOOGLE_CLIENT_ID not configured on server");
+      throw new ApiErrorHandle(
+        500,
+        "GOOGLE_CLIENT_ID not configured on server"
+      );
     }
 
     const ticket = await client_id.verifyIdToken({
@@ -45,15 +48,10 @@ const googleLogin = asyncHandler(async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
 
-    const options = {
-      httpOnly: true,
-      secure: true,
-    };
-
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refreshToken, options)
+      .cookie("accessToken", accessToken, cookieOptions)
+      .cookie("refreshToken", refreshToken, cookieOptions)
       .json(new ApiResponse(200, user, "Google login successful"));
   } catch (error) {
     console.error("Google login error:", error);

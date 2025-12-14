@@ -5,6 +5,7 @@ import {
   updateImageOnCloudinary,
   uploadOnCloudinary,
 } from "../utils/fileUpload.js";
+import { cookieOptions } from "../utils/dev_env.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -90,23 +91,25 @@ const registerUser = asyncHandler(async (req, res) => {
 //then generate access and refresh token
 //sent the accesstoekn to cookies
 const loginUser = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
-  const userEmail = email?.trim().toLowerCase();
-  const userUsername = username?.trim();
-  const userPassword = password?.trim();
+  const { identifier, password } = req.body;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (!userEmail && !userUsername) {
+  const query = emailRegex.test(identifier)
+    ? { email: identifier.toLowerCase() }
+    : { username: identifier };
+
+  if (!identifier) {
     throw new ApiErrorHandle(400, "Email or Username is required.");
   }
-  const userDataFromDatabase = await User.findOne({
-    $or: [{ email: userEmail }, { username: userUsername }],
-  });
+  console.log(query);
+  const userDataFromDatabase = await User.findOne(query);
+
   if (!userDataFromDatabase) {
     throw new ApiErrorHandle(404, "User not found!");
   }
-  console.log(userDataFromDatabase); //this provide the object
+  console.log(userDataFromDatabase);
   const isPasswordMatched = await userDataFromDatabase.isPasswordCorrect(
-    userPassword //isPasswordCorrect() from user.models.js
+    password
   );
   if (!isPasswordMatched) {
     throw new ApiErrorHandle(400, "Password not matched!");
@@ -120,11 +123,10 @@ const loginUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  const options = { httpOnly: true, secure: true };
   return res
     .status(200)
-    .cookie("accessToken", genAccessToken, options)
-    .cookie("refreshToken", genRefreshToken, options)
+    .cookie("accessToken", genAccessToken, cookieOptions)
+    .cookie("refreshToken", genRefreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,
@@ -143,7 +145,7 @@ const isUserLoggedIn = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       {
-        loggedIn: true,
+        logged_In: true,
         user: req.user,
       },
       "User loggedin Successfully"
@@ -163,11 +165,11 @@ const logoutUser = asyncHandler(async (req, res) => {
       new: true,
     }
   );
-  const options = { httpOnly: true, secure: true };
+
   return res
     .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
@@ -197,14 +199,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     // generate new tokens (function returns { genAccessToken, genRefreshToken })
     const { genAccessToken, genRefreshToken } =
       await generateAccessAndRefreshToken(userData._id);
-    const options = {
-      httpOnly: true,
-      secure: true,
-    };
+
     return res
       .status(200)
-      .cookie("refreshToken", genRefreshToken, options)
-      .cookie("accessToken", genAccessToken, options)
+      .cookie("refreshToken", genRefreshToken, cookieOptions)
+      .cookie("accessToken", genAccessToken, cookieOptions)
       .json(
         new ApiResponse(
           200,

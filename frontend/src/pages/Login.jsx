@@ -1,174 +1,163 @@
 import { Link } from "react-router-dom";
+import GoogleLogin from "../components/GoogleLogin.jsx";
+import { useState } from "react";
+import axios from "axios";
+import { AlertBox } from "../components/AlertBox.jsx";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    identifier: "",
+    password: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  const isFormValid =
+    formData.identifier.trim() !== "" && formData.password.trim() !== "";
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUserLogin = async (e) => {
+    e.preventDefault();
+    if (!isFormValid) return;
+
+    setLoading(true);
+    try {
+      const backendBase = import.meta.env.VITE_BACKEND_PORT_LINK;
+
+      const response = await axios.post(
+        `${backendBase}/api/users/login`,
+        {
+          identifier: formData.identifier,
+          password: formData.password,
+        },
+        { withCredentials: true }
+      );
+
+      AlertBox("success", response.data.message, response.status);
+      navigate("/");
+    } catch (error) {
+      AlertBox(
+        "error",
+        error.response?.data?.message || error.message,
+        error.response?.status
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto">
-        {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-r from-blue-600 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-            <svg
-              className="w-8 h-8 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
             Welcome Back
           </h1>
           <p className="text-gray-600">Sign in to access your account</p>
         </div>
 
-        {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <form className="space-y-6">
-            {/* Username/Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email or Username
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                    />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  placeholder="you@example.com or johndoe"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
+              <input
+                name="identifier"
+                value={formData.identifier}
+                onChange={handleChange}
+                type="text"
+                placeholder="you@example.com or johndoe"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
-            {/* Password Field */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Forgot password?
-                </a>
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                </div>
                 <input
-                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  type={showPassword ? "password" : "text"}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-sm text-gray-500"
                 >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
+                  {showPassword ? (
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 3l18 18M10.58 10.58A3 3 0 0113.42 13.42M9.88 4.24A9.53 9.53 0 0112 4c4.48 0 8.27 2.94 9.54 7a9.77 9.77 0 01-1.88 3.31M6.12 6.12A9.77 9.77 0 004.46 7.97 9.53 9.53 0 003.46 12c1.27 4.06 5.06 7 9.54 7a9.77 9.77 0 003.31-1.88"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />{" "}
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me */}
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label className="text-sm text-gray-700">
-                Remember me for 30 days
-              </label>
-            </div>
+            <button
+              type="submit"
+              onClick={handleUserLogin}
+              disabled={!isFormValid || loading}
+              className={`w-full py-3 font-semibold rounded-lg transition-all
+                ${
+                  isFormValid && !loading
+                    ? "bg-blue-600 text-white hover:bg-blue-700 cursor-pointer"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }
+              `}
+            >
+              {loading ? "Signing in..." : "Sign In"}
+            </button>
 
-            {/* Submit Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                className="w-full py-3 px-4 bg-linear-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                <div className="flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  Sign In
-                </div>
-              </button>
-            </div>
+            <div className="text-center text-gray-500">or</div>
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            {/* Social Login */}
+            <GoogleLogin />
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
@@ -201,37 +190,13 @@ export default function Login() {
                 </div>
               </button>
             </div>
-
-            {/* Register Link */}
-            <div className="pt-4 text-center">
-              <p className="text-gray-600">
-                Don't have an account?{" "}
-                <Link
-                  to={"/register"}
-                  className="text-blue-600 hover:text-blue-800 font-semibold"
-                >
-                  Sign up now
-                </Link>
-              </p>
-            </div>
+            <p className="text-center text-gray-600">
+              Don’t have an account?
+              <Link to="/register" className="text-blue-600 font-semibold">
+                Sign up
+              </Link>
+            </p>
           </form>
-        </div>
-
-        {/* Demo Accounts */}
-        <div className="mt-6 bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">
-            Demo Accounts:
-          </h3>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="font-medium text-gray-600">Email:</span>
-              <span className="ml-2 text-gray-500">demo@example.com</span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-600">Password:</span>
-              <span className="ml-2 text-gray-500">demo123</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
