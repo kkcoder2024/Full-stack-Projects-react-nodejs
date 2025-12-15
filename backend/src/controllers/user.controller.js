@@ -5,7 +5,10 @@ import {
   updateImageOnCloudinary,
   uploadOnCloudinary,
 } from "../utils/fileUpload.js";
-import { cookieOptions } from "../utils/dev_env.js";
+import {
+  accessTokenCookieOptions,
+  refreshTokenCookieOptions,
+} from "../utils/dev_env.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -50,8 +53,6 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiErrorHandle(400, "User already existed");
   }
-  console.table(req.body);
-  console.log(JSON.stringify(req.files?.avatar?.[0] || "no avatar provided"));
 
   const avatarLocalPath = req.files?.avatar?.[0]?.path;
   const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
@@ -125,8 +126,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("accessToken", genAccessToken, cookieOptions)
-    .cookie("refreshToken", genRefreshToken, cookieOptions)
+    .cookie("accessToken", genAccessToken, accessTokenCookieOptions)
+    .cookie("refreshToken", genRefreshToken, refreshTokenCookieOptions)
     .json(
       new ApiResponse(
         200,
@@ -168,8 +169,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .clearCookie("accessToken", cookieOptions)
-    .clearCookie("refreshToken", cookieOptions)
+    .clearCookie("accessToken", accessTokenCookieOptions)
+    .clearCookie("refreshToken", refreshTokenCookieOptions)
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
@@ -202,8 +203,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .cookie("refreshToken", genRefreshToken, cookieOptions)
-      .cookie("accessToken", genAccessToken, cookieOptions)
+      .cookie("accessToken", genAccessToken, accessTokenCookieOptions)
+      .cookie("refreshToken", genRefreshToken, refreshTokenCookieOptions)
       .json(
         new ApiResponse(
           200,

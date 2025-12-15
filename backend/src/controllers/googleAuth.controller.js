@@ -3,7 +3,10 @@ import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiErrorHandle } from "../utils/ApiErrorHandle.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { cookieOptions } from "../utils/dev_env.js";
+import {
+  refreshTokenCookieOptions,
+  accessTokenCookieOptions,
+} from "../utils/dev_env.js";
 const client_id = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
 });
@@ -50,11 +53,10 @@ const googleLogin = asyncHandler(async (req, res) => {
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, cookieOptions)
-      .cookie("refreshToken", refreshToken, cookieOptions)
+      .cookie("accessToken", accessToken, accessTokenCookieOptions)
+      .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
       .json(new ApiResponse(200, user, "Google login successful"));
   } catch (error) {
-    console.error("Google login error:", error);
     throw new ApiErrorHandle(
       500,
       error?.message || "Google login failed due to Server Error"
