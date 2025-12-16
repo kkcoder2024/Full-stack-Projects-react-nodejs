@@ -15,8 +15,10 @@ app.use(cookieParser());
 
 import { router } from "./routes/user.routes.js";
 import { googleRouter } from "./routes/google.routes.js";
+import { todoRouter } from "./routes/todo.routes.js";
 app.use("/api/users", router);
 app.use("/api/users/google-login", googleRouter);
+app.use("/api/p1", todoRouter); //p1 reffers to Projects 1 -Todo
 
 app.use((err, req, res, next) => {
   console.error(err);

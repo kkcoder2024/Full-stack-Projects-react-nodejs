@@ -1,27 +1,179 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import LoadingScreen from "../components/LoadingScreen";
+import LoadingScreen from "../components/LoadingScreen.jsx";
+import axios from "axios";
+import { AlertBox } from "../components/AlertBox.jsx";
 export default function Todo() {
-  const [todos, setTodos] = useState([
-    { id: 1, text: "Learn React basics", completed: false },
-    { id: 2, text: "Practice Tailwind CSS", completed: true },
-    { id: 3, text: "Build a todo app", completed: false },
-  ]);
+  const [todos, setTodos] = useState([]); //todo collection
   const navigate = useNavigate();
-  const [newTodo, setNewTodo] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [newTodo, setNewTodo] = useState(""); // input collection
+  const [addBtnTodo, setAddBtnTodo] = useState(false); //btn text handle
+  const [isLoading, setIsLoading] = useState(true); //loader handle
+  const [editTodo, setEditTodo] = useState(false); //edit handle
+  const [editTodoId, setEditTodoId] = useState(""); //edit ID handle
+  const [editBtnTodo, setEditBtnTodo] = useState(false); //btn text handle
+  const handleAddNewTodo = async () => {
+    if (!newTodo.trim()) {
+      AlertBox("error", "Please enter a task before adding it.");
+      return;
+    }
+    setAddBtnTodo(true);
+    try {
+      const backend = import.meta.env.VITE_BACKEND_PORT_LINK;
 
+      const response = await axios.post(
+        `${backend}/api/p1/add-todo`,
+        { todo: newTodo },
+        { withCredentials: true }
+      );
+
+      if (response?.data?.data) {
+        AlertBox("success", response.data.message);
+        setTodos((prev) => [...prev, response.data.data]);
+        setNewTodo("");
+      }
+    } catch (error) {
+      AlertBox(
+        "error",
+        error.response?.data?.message || error.message,
+        error.response?.status
+      );
+    } finally {
+      setAddBtnTodo(false);
+    }
+  };
+  const handleCompleteTodo = async (id, condition) => {
+    if (!id) {
+      AlertBox("error", "There is an error occure!");
+      return;
+    }
+    if (id && condition == false) {
+      try {
+        const backend = import.meta.env.VITE_BACKEND_PORT_LINK;
+        const response = await axios.post(
+          `${backend}/api/p1/complete-todo`,
+          {},
+          {
+            params: { type: id },
+            withCredentials: true,
+          }
+        );
+
+        if (response?.data?.data) {
+          setTodos(response.data.data);
+          AlertBox("success", response.data.message);
+        }
+      } catch (error) {
+        AlertBox(
+          "error",
+          error.response?.data?.message || error.message,
+          error.response?.status
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  const getEditTodo = async (id) => {
+    setEditTodo(true);
+    if (!id) {
+      AlertBox("error", "There is an error occure!");
+      return;
+    }
+    if (id) {
+      try {
+        const backend = import.meta.env.VITE_BACKEND_PORT_LINK;
+        const response = await axios.get(`${backend}/api/p1/get-one-todo`, {
+          params: { type: id },
+          withCredentials: true,
+        });
+
+        if (response && response?.data?.data) {
+          setNewTodo(response.data.data.todo);
+        }
+      } catch (error) {
+        AlertBox(
+          "error",
+          error.response?.data?.message || error.message,
+          error.response?.status
+        );
+      } finally {
+        setIsLoading(false);
+        setEditTodoId(id);
+      }
+    }
+  };
+  const handleEditTodo = async () => {
+    const id = editTodoId;
+    setEditBtnTodo(true);
+    if (!id) {
+      AlertBox("error", "There is an error occure!");
+      return;
+    }
+    if (id) {
+      try {
+        const backend = import.meta.env.VITE_BACKEND_PORT_LINK;
+        const response = await axios.post(
+          `${backend}/api/p1/edit-todo`,
+          { id, editTodo: newTodo },
+          {
+            withCredentials: true,
+          }
+        );
+
+        if (response?.data?.data) {
+          AlertBox("success", response.data.message);
+          setTodos(response.data.data);
+          setNewTodo("");
+        }
+      } catch (error) {
+        AlertBox(
+          "error",
+          error.response?.data?.message || error.message,
+          error.response?.status
+        );
+        setEditBtnTodo(false);
+        setAddBtnTodo(true);
+        setNewTodo("");
+      } finally {
+        setNewTodo("");
+        setIsLoading(false);
+        setEditBtnTodo(false);
+        setAddBtnTodo(false);
+        setEditTodo(false);
+      }
+    }
+  };
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2500);
+    const get_All_Todos = async () => {
+      try {
+        const backend = import.meta.env.VITE_BACKEND_PORT_LINK;
 
-    return () => clearTimeout(timer);
+        const response = await axios.get(`${backend}/api/p1/get-todos`, {
+          params: { type: "all" },
+          withCredentials: true,
+        });
+
+        if (response?.data?.data) {
+          setTodos(response.data.data);
+        }
+      } catch (error) {
+        AlertBox(
+          "error",
+          error.response?.data?.message || error.message,
+          error.response?.status
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    get_All_Todos();
   }, []);
 
   if (isLoading) {
-    return <LoadingScreen />;
+    // return <LoadingScreen />;
   }
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-4 px-2">
@@ -51,23 +203,32 @@ export default function Todo() {
                 <input
                   type="text"
                   value={newTodo}
-                  onChange={() => {}}
+                  onChange={(e) => setNewTodo(e.target.value)}
                   placeholder="What needs to be done?"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4"
                 />
-                <button
-                  onClick={() => {}}
-                  className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                  Add Task
-                </button>
+                {editTodo ? (
+                  <button
+                    onClick={handleEditTodo}
+                    className=" cursor-pointer w-full px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    {editBtnTodo ? "Editing new task..." : "Update Task"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAddNewTodo}
+                    className=" cursor-pointer w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    {addBtnTodo ? "Adding new task..." : "Add Task"}
+                  </button>
+                )}
               </div>
 
               <div className="space-y-4">
                 <h3 className="font-medium text-gray-700">Quick Actions</h3>
                 <button
                   onClick={() => {}}
-                  className="w-full px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 flex items-center justify-center"
+                  className="cursor-pointer w-full px-4 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 flex items-center justify-center"
                 >
                   <svg
                     className="w-5 h-5 mr-2"
@@ -157,14 +318,16 @@ export default function Todo() {
               <div className="divide-y divide-gray-200">
                 {todos.map((todo) => (
                   <div
-                    key={todo.id}
+                    key={todo._id}
                     className={`p-5 flex items-center justify-between hover:bg-gray-50 transition-colors duration-150 ${
                       todo.completed ? "bg-green-50" : ""
                     }`}
                   >
                     <div className="flex items-center space-x-4">
                       <button
-                        onClick={() => {}}
+                        onClick={() =>
+                          handleCompleteTodo(todo._id, todo.completed)
+                        }
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                           todo.completed
                             ? "bg-green-500 border-green-500"
@@ -189,43 +352,42 @@ export default function Todo() {
                       </button>
                       <div className="flex-1">
                         <span
-                          className={`text-lg ${
+                          className={`text-lg wrap-break-word whitespace-pre-wrap ${
                             todo.completed
                               ? "line-through text-gray-500"
                               : "text-gray-800"
                           }`}
                         >
-                          {todo.text}
+                          {todo.todo}
                         </span>
-                        {todo.dueDate && (
-                          <div className="text-sm text-gray-500 mt-1">
-                            Due: {todo.dueDate}
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button
-                        onClick={() => {}}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                      {todo.completed == true ? (
+                        ""
+                      ) : (
+                        <button
+                          onClick={() => getEditTodo(todo._id)}
+                          className="cursor-pointer p-2 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors duration-200 outline-none ring-2 ring-blue-500 ring-offset-2"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </button>
+                      )}
                       <button
                         onClick={() => {}}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                        className=" ms-3 cursor-pointer p-2 text-red-600 hover:bg-red-200 rounded-lg transition-colors duration-200 outline-none ring-2 ring-red-500 ring-offset-2"
                       >
                         <svg
                           className="w-5 h-5"

@@ -1,32 +1,32 @@
-import { Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { checkAuth } from "../utils/auth";
-import { AlertBox } from "./AlertBox";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { checkAuth } from "../utils/auth.jsx";
+import LoadingScreen from "../components/LoadingScreen.jsx";
 
-export default function PrivateRoute({ children }) {
+export default function PrivateRoute() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     const verify = async () => {
-      const isAuth = await checkAuth();
-
-      if (!isAuth) {
-        AlertBox("error", "You cannot visit project page without login", 401);
+      try {
+        const isAuth = await checkAuth();
+        setAuthenticated(isAuth);
+      } catch {
+        setAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
-
-      setAuthenticated(isAuth);
-      setLoading(false);
     };
 
     verify();
   }, []);
 
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
 
   return authenticated ? (
-    children
+    <Outlet />
   ) : (
     <Navigate to="/login" replace state={{ from: location.pathname }} />
   );

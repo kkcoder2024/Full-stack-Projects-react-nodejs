@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { checkAuth } from "../utils/auth.jsx";
+import LoadingScreen from "../components/LoadingScreen.jsx";
+
 export default function PublicRoute() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -11,7 +13,7 @@ export default function PublicRoute() {
       try {
         const isLogin = await checkAuth();
         setAuthenticated(isLogin);
-      } catch (err) {
+      } catch {
         setAuthenticated(false);
       } finally {
         setLoading(false);
@@ -21,7 +23,7 @@ export default function PublicRoute() {
     verify();
   }, []);
 
-  if (loading) return null;
+  if (loading) return <LoadingScreen />;
 
   return authenticated ? (
     <Navigate to="/" replace state={{ from: location.pathname }} />

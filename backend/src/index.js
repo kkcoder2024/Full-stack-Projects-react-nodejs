@@ -6,7 +6,6 @@ import { connectionDB } from "./database/db.js";
 connectionDB()
   .then(() => {
     app.on("error", (error) => {
-      //check if the express talk to database or not
       console.log("Express Error:" + error);
       throw error;
     });

@@ -3,7 +3,7 @@ export const accessTokenCookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
-  maxAge: 1 * 60 * 60 * 1000,
+  maxAge: 24 * 60 * 60 * 1000,
 };
 export const refreshTokenCookieOptions = {
   httpOnly: true,

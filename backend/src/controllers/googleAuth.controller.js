@@ -7,60 +7,69 @@ import {
   refreshTokenCookieOptions,
   accessTokenCookieOptions,
 } from "../utils/dev_env.js";
-const client_id = new OAuth2Client({
-  clientId: process.env.GOOGLE_CLIENT_ID,
-});
 
-const googleLogin = asyncHandler(async (req, res) => {
-  try {
-    const { token } = req.body;
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-    if (!token) {
-      throw new ApiErrorHandle(400, "Google token not provided");
-    }
+export const googleLogin = asyncHandler(async (req, res) => {
+  const { token } = req.body;
 
-    if (!process.env.GOOGLE_CLIENT_ID) {
-      throw new ApiErrorHandle(
-        500,
-        "GOOGLE_CLIENT_ID not configured on server"
-      );
-    }
-
-    const ticket = await client_id.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-
-    const { name: fullname, email, picture: avatar } = payload;
-
-    let user = await User.findOne({ email });
-    if (!user) {
-      user = await User.create({
-        fullname,
-        username: email.split("@")[0],
-        email,
-        avatar,
-        coverImage: "",
-        password: "",
-        googleAuth: true,
-      });
-    }
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
-    user.refreshToken = refreshToken;
-    await user.save({ validateBeforeSave: false });
-
-    return res
-      .status(200)
-      .cookie("accessToken", accessToken, accessTokenCookieOptions)
-      .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
-      .json(new ApiResponse(200, user, "Google login successful"));
-  } catch (error) {
-    throw new ApiErrorHandle(
-      500,
-      error?.message || "Google login failed due to Server Error"
-    );
+  if (!token) {
+    throw new ApiErrorHandle(400, "Google token not provided");
   }
+
+  if (!process.env.GOOGLE_CLIENT_ID) {
+    throw new ApiErrorHandle(500, "Google client ID not configured");
+  }
+
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+
+  if (!payload) {
+    throw new ApiErrorHandle(401, "Invalid Google token");
+  }
+
+  if (!payload.email_verified) {
+    throw new ApiErrorHandle(401, "Google email not verified");
+  }
+
+  const { name, email, picture } = payload;
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      fullname: name,
+      username: email.split("@")[0],
+      email,
+      avatar: picture,
+      coverImage: "",
+      password: null,
+      googleAuth: true,
+    });
+  }
+
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+
+  const safeUser = {
+    _id: user._id,
+    fullname: user.fullname,
+    username: user.username,
+    email: user.email,
+    avatar: user.avatar,
+    googleAuth: user.googleAuth,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, accessTokenCookieOptions)
+    .cookie("refreshToken", refreshToken, refreshTokenCookieOptions)
+    .json(new ApiResponse(200, safeUser, "Google login successful"));
 });
-export { googleLogin };

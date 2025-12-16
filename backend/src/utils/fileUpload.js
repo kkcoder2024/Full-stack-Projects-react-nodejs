@@ -1,32 +1,32 @@
 import { v2 as cloudinary } from "cloudinary";
-import fs, { existsSync, unlinkSync } from "fs";
+import { existsSync, unlinkSync } from "fs";
 import { ApiErrorHandle } from "./ApiErrorHandle.js";
+import { ApiResponse } from "./ApiResponse.js";
 cloudinary.config({
-  cloud_name: "db7qmdfr2",
-  api_key: "723248213726281",
-  api_secret: "vcFR0cRfyiGf-GqlBJ4A7mtxGKU",
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const uploadOnCloudinary = async (localFilePath) => {
   try {
-    if (!localFilePath) throw new Error("No file path provided for upload");
+    if (!localFilePath) {
+      throw new ApiErrorHandle(400, "No file path provided");
+    }
     const response = await cloudinary.uploader.upload(localFilePath);
-    console.log("File Uploaded Succesfully", response);
-    try {
-      if (localFilePath && existsSync(localFilePath)) {
-        unlinkSync(localFilePath);
-      } else {
-        console.warn("Local file not found for removal:", localFilePath);
-      }
-    } catch (e) {
-      console.error("Failed to remove local file after upload:", e);
+    if (existsSync(localFilePath)) {
+      unlinkSync(localFilePath);
     }
     return response;
   } catch (error) {
-    // remove local file if exists
-    try {
-      if (localFilePath && existsSync(localFilePath)) unlinkSync(localFilePath);
-    } catch (e) {
-      console.error("Failed to remove local file:", e);
+    if (localFilePath && existsSync(localFilePath)) {
+      unlinkSync(localFilePath);
     }
     throw new ApiErrorHandle(500, "Cloudinary Upload Error: " + error.message);
   }

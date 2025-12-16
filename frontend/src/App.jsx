@@ -1,10 +1,13 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Login from "../src/pages/Login.jsx";
+
+import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Profile from "./pages/Profile.jsx";
 import Todo from "./pages/Todo.jsx";
 import Home from "./pages/Home.jsx";
+import Channel from "./pages/Channel.jsx";
+
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
 
@@ -13,11 +16,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
+
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Route>
+
         <Route element={<PrivateRoute />}>
+          <Route path="/channel" element={<Channel />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
