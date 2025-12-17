@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { checkAuth } from "../utils/auth.jsx";
-import LoadingScreen from "../components/LoadingScreen.jsx";
+import LoadingScreen from "./LoadingScreen.jsx";
 
 export default function PublicRoute() {
   const [loading, setLoading] = useState(true);

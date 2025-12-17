@@ -1,7 +1,11 @@
 import ProjectCard from "./ProjectCard";
 
 const projects = [
-  { name: "Weather App", color: "from-blue-400 to-cyan-400", to: "#" },
+  {
+    name: "Weather App",
+    color: "from-blue-400 to-cyan-400",
+    to: "/weather-app",
+  },
   { name: "Todo App", color: "from-green-400 to-emerald-500", to: "/todo" },
   { name: "Search App", color: "from-purple-400 to-pink-500", to: "#" },
   {

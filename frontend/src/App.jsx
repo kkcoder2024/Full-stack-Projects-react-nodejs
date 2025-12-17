@@ -10,6 +10,7 @@ import Channel from "./pages/Channel.jsx";
 
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
+import WeatherApp from "./pages/Wheather-App.jsx";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         </Route>
 
         <Route element={<PrivateRoute />}>
+          <Route path="/weather-app" element={<WeatherApp />} />
           <Route path="/channel" element={<Channel />} />
           <Route path="/todo" element={<Todo />} />
           <Route path="/profile" element={<Profile />} />

@@ -346,7 +346,7 @@ export default function Todo() {
   }
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-4 px-2">
-      <div className="max-w-8xl mx-auto px-2">
+      <div className="max-w-7xl mx-auto px-2">
         <div className=" flex justify-center mb-10 text-center relative">
           <button
             onClick={() => navigate(-1)}

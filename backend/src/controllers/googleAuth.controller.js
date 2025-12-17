@@ -8,9 +8,8 @@ import {
   accessTokenCookieOptions,
 } from "../utils/dev_env.js";
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 export const googleLogin = asyncHandler(async (req, res) => {
+  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   const { token } = req.body;
 
   if (!token) {
@@ -31,7 +30,7 @@ export const googleLogin = asyncHandler(async (req, res) => {
   if (!payload) {
     throw new ApiErrorHandle(401, "Invalid Google token");
   }
-
+  console.log(payload);
   if (!payload.email_verified) {
     throw new ApiErrorHandle(401, "Google email not verified");
   }
