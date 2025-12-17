@@ -47,7 +47,6 @@ export default function Register() {
       }
       const backendBase = import.meta.env.VITE_BACKEND_PORT_LINK;
       const requestUrl = `${backendBase}/api/users/register`;
-      console.log("Register request ->", requestUrl);
       const response = await axios.post(requestUrl, formData, {
         headers: {
           "Content-Type": "multipart/form-data",

@@ -66,8 +66,12 @@ const editTodo = asyncHandler(async (req, res) => {
     throw new ApiErrorHandle(400, "Failed to get request!");
   }
 
-  const old_todo = await Todo.findById({ _id: id });
-  if (old_todo.todo == editTodo.trim()) {
+  const old_todo = await Todo.find();
+  const isExisted = old_todo.some((item) => {
+    return item.todo == editTodo;
+  });
+  console.log(isExisted);
+  if (isExisted) {
     throw new ApiErrorHandle(400, "Todo already existed!");
   }
   const updated_todo = await Todo.findByIdAndUpdate(
@@ -106,6 +110,94 @@ const completeTodo = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(new ApiResponse(201, todo, "Task Completed Successfully."));
+    .json(new ApiResponse(200, todo, "Task Completed Successfully."));
 });
-export { AddTodo, getAllTodo, completeTodo, getOneTodo, editTodo };
+
+const deleteTodo = asyncHandler(async (req, res) => {
+  const id = req.query.type;
+  if (!id) {
+    throw new ApiErrorHandle(400, "Failed to fetch request!");
+  }
+  const delete_todo = await Todo.findByIdAndDelete({ _id: id });
+  if (!delete_todo) {
+    throw new ApiErrorHandle(500, "Failed to delete this task.");
+  }
+  const todo = await Todo.find();
+  if (!todo) {
+    throw new ApiErrorHandle(500, "Failed to fetch todo due to server error.");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, todo, "Todo Deleted Successfully."));
+});
+
+const deleteAllTodo = asyncHandler(async (req, res) => {
+  const del_todo = await Todo.deleteMany({});
+  if (!del_todo) {
+    throw new ApiErrorHandle(500, "Failed to fetch todo due to server error.");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, [], "All Todo Deleted Successfully."));
+});
+
+const deleteCompletedTodo = asyncHandler(async (req, res) => {
+  const { completed } = req.body;
+  if (!completed) {
+    throw new ApiErrorHandle(400, "Failed to fetch request!");
+  }
+  const completedTodos = await Todo.find({ completed: true });
+
+  if (completedTodos.deletedCount === 0) {
+    throw new ApiErrorHandle(500, "No completed todo found to delete.");
+  }
+  const delete_complete_todo = await Todo.deleteMany({ completed: true });
+  if (!delete_complete_todo) {
+    throw new ApiErrorHandle(500, "Failed to delete these task.");
+  }
+  const todo = await Todo.find();
+  if (!todo) {
+    throw new ApiErrorHandle(500, "Failed to fetch todo due to server error.");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, todo, "Todo Deleted Successfully."));
+});
+
+const completedAllTodo = asyncHandler(async (req, res) => {
+  const { completedAll } = req.body;
+  if (!completedAll) {
+    throw new ApiErrorHandle(400, "Failed to fetch request!");
+  }
+  const updateResult = await Todo.find({ completed: false });
+
+  if (!updateResult) {
+    throw new ApiErrorHandle(500, "No incompleted todo found to complete.");
+  }
+  const complete_all_todo = await Todo.updateMany(
+    { completed: false },
+    { $set: { completed: true } }
+  );
+  if (!complete_all_todo) {
+    throw new ApiErrorHandle(500, "Failed to complete these task.");
+  }
+  const todo = await Todo.find();
+  if (!todo) {
+    throw new ApiErrorHandle(500, "Failed to fetch todo due to server error.");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, todo, "All Todo Completed Successfully."));
+});
+
+export {
+  AddTodo,
+  getAllTodo,
+  completeTodo,
+  getOneTodo,
+  editTodo,
+  deleteTodo,
+  deleteAllTodo,
+  deleteCompletedTodo,
+  completedAllTodo,
+};

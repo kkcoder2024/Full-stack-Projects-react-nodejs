@@ -22,7 +22,6 @@ app.use("/api/p1", todoRouter); //p1 reffers to Projects 1 -Todo
 
 app.use((err, req, res, next) => {
   console.error(err);
-
   if (err && err.statusCode) {
     return res.status(err.statusCode).json({
       success: false,
