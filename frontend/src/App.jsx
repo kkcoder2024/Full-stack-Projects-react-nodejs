@@ -16,17 +16,11 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-
-        <Route element={<PublicRoute />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-        </Route>
-
-       
           <Route path="/weather-app" element={<WeatherApp />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/todo" element={<Todo />} />
-       
       </Routes>
     </BrowserRouter>
   );
