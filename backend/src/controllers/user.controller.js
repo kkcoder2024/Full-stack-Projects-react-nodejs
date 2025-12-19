@@ -103,7 +103,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiErrorHandle(400, "Email or Username is required.");
   }
 
-  const userDataFromDatabase = await User.findOne(query);
+  const userDataFromDatabase = await User.findOne(query).select("+password");
 
   if (!userDataFromDatabase) {
     throw new ApiErrorHandle(404, "User not found!");
