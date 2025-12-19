@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthContent } from "../components/AuthContent";
 import LoadingScreen from "../components/LoadingScreen";
-import ProjectsGrid from "../components/Todo/ProjectsGrid";
+import ProjectsGrid from "../components/ProjectsGrid";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);

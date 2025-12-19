@@ -1,4 +1,4 @@
-import ProjectCard from "./ProjectCard";
+import ProjectCard from "./Todo/ProjectCard";
 
 const projects = [
   {
@@ -11,7 +11,7 @@ const projects = [
   {
     name: "Personal Portfolio",
     color: "from-orange-400 to-red-500",
-    to: "#",
+    to: "/portfolio",
   },
   { name: "Notes App", color: "from-yellow-400 to-amber-500", to: "#" },
   { name: "Blog / CMS", color: "from-indigo-400 to-violet-500", to: "#" },

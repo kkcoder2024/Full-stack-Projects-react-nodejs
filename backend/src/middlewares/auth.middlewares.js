@@ -20,7 +20,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     }
     throw new ApiErrorHandle(401, "Invalid access token");
   }
-
+  console.log(decoded);
   if (!decoded?._id) {
     throw new ApiErrorHandle(401, "Invalid token payload");
   }

@@ -3,14 +3,13 @@ import "./App.css";
 
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import Profile from "./pages/Profile.jsx";
 import Todo from "./pages/Todo.jsx";
 import Home from "./pages/Home.jsx";
-import Channel from "./pages/Channel.jsx";
 
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
 import WeatherApp from "./pages/Wheather-App.jsx";
+import Portfolio from "./pages/Portfolio.jsx";
 
 function App() {
   return (
@@ -25,9 +24,10 @@ function App() {
 
         <Route element={<PrivateRoute />}>
           <Route path="/weather-app" element={<WeatherApp />} />
-          <Route path="/channel" element={<Channel />} />
+          <Route path="/portfolio" element={<Portfolio />} />
+          {/* <Route path="/channel" element={<Channel />} /> */}
           <Route path="/todo" element={<Todo />} />
-          <Route path="/profile" element={<Profile />} />
+          {/* <Route path="/profile" element={<Profile />} /> */}
         </Route>
       </Routes>
     </BrowserRouter>
