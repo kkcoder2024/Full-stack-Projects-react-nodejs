@@ -4,7 +4,10 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: [
+      "http://localhost:5173",
+      "https://productivity-hub-21a1.onrender.com"
+    ],
     credentials: true,
   })
 );
