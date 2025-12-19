@@ -20,14 +20,12 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
     }
     throw new ApiErrorHandle(401, "Invalid access token");
   }
-  console.log(decoded);
+
   if (!decoded?._id) {
     throw new ApiErrorHandle(401, "Invalid token payload");
   }
 
-  const user = await User.findById(decoded._id).select(
-    "-password -refreshToken"
-  );
+  const user = await User.findById(decoded._id);
 
   if (!user) {
     throw new ApiErrorHandle(401, "User no longer exists");

@@ -5,14 +5,14 @@ const Hero = () => {
   return (
     <section
       id="home"
-      className="pt-sm-34 pb-sm-36 pt-20 pb-10  px-4 bg-linear-to-br from-gray-900 to-gray-800"
+      className="pt-24 pb-16 sm:pt-34 sm:pb-36 px-4 bg-linear-to-br from-gray-900 to-gray-800"
     >
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col lg:flex-row items-center justify-between">
           <div className="lg:w-1/2 mb-sm-12 mb-8 lg:mb-0">
             <div className="mb-6">
               <span className="inline-block px-4 py-1 bg-gray-800 rounded-full text-sm text-gray-300 mb-4">
-                Freelancer
+                Developer
               </span>
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
                 Koushik <span className="text-purple-400">Karmakar</span>
@@ -49,7 +49,7 @@ const Hero = () => {
               </button>
             </div>
 
-            <div className="mt-8 mt-sm-12 p-6 bg-gray-800/50 rounded-xl">
+            <div className="mt-8 sm:mt-12 p-6 bg-gray-800/50 rounded-xl">
               <div className="flex items-center justify-between">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-400">3+</div>
