@@ -5,11 +5,7 @@ const Hero = () => {
   return (
     <section
       id="home"
-<<<<<<< HEAD
       className="pt-24 pb-16 sm:pt-34 sm:pb-36 px-4 bg-linear-to-br from-gray-900 to-gray-800"
-=======
-      className=" pt-20 pb-10 px-4 bg-linear-to-br from-gray-900 to-gray-800"
->>>>>>> 41d2e46932e439ebdadb5f421133bed6c6befba1
     >
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col lg:flex-row items-center justify-between">
