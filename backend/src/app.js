@@ -6,7 +6,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://productivity-hub-21a1.onrender.com",
+      "https://cortex-84nx.onrender.com",
       process.env.VITE_BACKEND_PORT_LINK,
     ],
     credentials: true,
